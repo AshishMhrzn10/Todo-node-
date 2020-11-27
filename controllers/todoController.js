@@ -1,4 +1,5 @@
 var bodyParser = require("body-parser");
+const { request } = require("http");
 var mongoose = require("mongoose");
 
 //Connect to the database
@@ -14,34 +15,31 @@ var todoSchema = new mongoose.Schema({
 });
 
 var Todo = mongoose.model("Todo", todoSchema);
-var itemOne = Todo({ item: "buy flowers" }).save(function (err) {
-	if (err) throw err;
-	console.log("item saved");
-});
-
-var data = [
-	{ item: "Eat" },
-	{ item: "Sleep" },
-	{ item: "Code" },
-	{ item: "Repeat" },
-];
 
 var urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 module.exports = function (app) {
 	app.get("/todo", function (req, res) {
-		res.render("todo", { todos: data });
+		Todo.find({}, function (err, data) {
+			if (err) throw err;
+			res.render("todo", { todos: data });
+		});
 	});
 
 	app.post("/todo", urlencodedParser, function (req, res) {
-		data.push(req.body);
-		res.json({ todos: data });
+		var newTodo = Todo(req.body).save(function (err, data) {
+			if (err) throw err;
+			res.json({ todos: data });
+		});
 	});
 
 	app.delete("/todo/:item", function (req, res) {
-		data = data.filter(function (todo) {
-			return todo.item.replace(/ /g, "-") !== req.params.item;
+		Todo.find({ item: req.params.item.replace(/\-/g, " ") }).remove(function (
+			err,
+			data
+		) {
+			if (err) throw err;
+			res.json({ todos: data });
 		});
-		res.json({ todos: data });
 	});
 };
