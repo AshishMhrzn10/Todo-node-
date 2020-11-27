@@ -1,4 +1,23 @@
 var bodyParser = require("body-parser");
+var mongoose = require("mongoose");
+
+//Connect to the database
+mongoose.connect(
+	"mongodb+srv://test:test@todo.qod4w.mongodb.net/todo?retryWrites=true&w=majority",
+	{ useNewUrlParser: true }
+);
+
+//Create a schema - this is like a blueprint
+
+var todoSchema = new mongoose.Schema({
+	item: String,
+});
+
+var Todo = mongoose.model("Todo", todoSchema);
+var itemOne = Todo({ item: "buy flowers" }).save(function (err) {
+	if (err) throw err;
+	console.log("item saved");
+});
 
 var data = [
 	{ item: "Eat" },
